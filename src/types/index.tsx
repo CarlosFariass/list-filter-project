@@ -12,3 +12,5 @@ export interface ListType {
     title: string
     body: string
   }
+
+  export type NewTask = Omit<ListType, "id" | "completed">;

@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from "react"
+import { NewTask } from "../../types"
+
+interface Task {
+  id: number
+  title: string
+  body: string
+  completed: boolean
+  userId: number
+}
 
 interface ModalProps {
-  task: {
-    title: string
-    body: string
-    id: number
-    completed: boolean
-  }
-  onUpdateTask: (updatedTask: { title: string, body: string, completed: boolean }) => void
-  onAddTask: (newTask: { title: string, body: string }) => void
+  task: Task
+  onUpdateTask: (updatedTask: Task) => Promise<void>
+  onAddTask: (newTask: NewTask) => Promise<void>;
   onClose: () => void
   isAdding?: boolean
 }
@@ -26,17 +30,18 @@ const Modal: React.FC<ModalProps> = ({ task, onUpdateTask, onAddTask, onClose, i
     } else {
       setTitle('')
       setBody('')
-      setStatus(false) 
+      setStatus(false)
     }
   }, [task, isAdding])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (isAdding) {
-      onAddTask({ title, body })
+      await onAddTask({ title, body, userId: task.userId })
     } else {
-      onUpdateTask({ title, body, completed: status }) 
+      await onUpdateTask({ ...task, title, body, completed: status })
     }
+    onClose()
   }
 
   return (

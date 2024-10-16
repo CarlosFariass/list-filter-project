@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react"
 import { Plus, Edit, Trash2 } from "lucide-react"
-import Pagination from "../pagination"
+import Pagination from "../pagination/pagination"
 import { ListType } from "../../types"
-import Modal from "../modal"
+import Modal from "../modal/modal"
 import ConfirmationModal from "../modal/confirmation-modal"
-import { useTaskContext } from '../../context/taskContext'
+import { useTaskContext } from '../../contexts/taskContext'
 
 const ITEMS_PER_PAGE = 10
 
@@ -45,10 +45,10 @@ const List = () => {
   if (loading) return <p className="text-center">Carregando...</p>
   if (error) return <p className="text-center text-red-500">{error}</p>
 
-  const handleAddTask = async (task: ListType) => {
-    await addTask(task)
-    setIsModalOpen(false)
-  }
+  const handleAddTask = async (task: Omit<ListType, "id" | "completed">) => {
+    await addTask({ ...task, id: 0, completed: false }); // Adicionando valores padrão
+    setIsModalOpen(false);
+  };
 
   const handleEditTask = (task: ListType) => {
     setSelectedTask(task)

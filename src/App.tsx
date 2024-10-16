@@ -1,7 +1,7 @@
 // import { useState } from 'react'
 import './App.css'
-import { TaskProvider} from './context/taskContext'
-import List from './components/list'
+import { TaskProvider} from './contexts/taskContext'
+import List from './components/list/list'
 
 function App() {
 
