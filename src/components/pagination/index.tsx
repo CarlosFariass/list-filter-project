@@ -1,4 +1,3 @@
-// src/components/Pagination.tsx
 import React from "react"
 
 interface PaginationProps {
@@ -16,17 +15,17 @@ const Pagination: React.FC<PaginationProps> = ({
     <div className="flex justify-center mt-4 space-x-2">
       <button
         disabled={currentPage === 1}
-        className="px-3 py-1 bg-gray-300 rounded-md disabled:opacity-50 text-[#000]"
+        className="px-3 py-1 bg-[#a49393] rounded-md disabled:opacity-50 text-[#44464a]"
         onClick={() => onPageChange(currentPage - 1)}
       >
         {'<'}
       </button>
-      <span className="px-3 py-1 text-[#000]">
+      <span className="px-3 py-1 text-[#44464a]">
         {currentPage} - {totalPages}
       </span>
       <button
         disabled={currentPage === totalPages}
-        className="px-3 py-1 bg-gray-300 rounded-md disabled:opacity-50 text-[#000]"
+        className="px-3 py-1 bg-[#a49393] rounded-md disabled:opacity-50 text-[#44464a]"
         onClick={() => onPageChange(currentPage + 1)}
       >
         {'>'}

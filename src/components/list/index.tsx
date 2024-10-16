@@ -1,45 +1,31 @@
-import { useEffect, useState, useMemo } from "react"
-import { Plus } from "lucide-react"
+import { useState, useMemo } from "react"
+import { Plus, Edit, Trash2 } from "lucide-react"
 import Pagination from "../pagination"
 import { ListType } from "../../types"
 import Modal from "../modal"
-import { addTask, updateTask, deleteTask } from "../../services/index"
+import ConfirmationModal from "../modal/confirmation-modal"
+import { useTaskContext } from '../../context/taskContext'
 
 const ITEMS_PER_PAGE = 10
 
 const List = () => {
-  const [tasks, setTasks] = useState<ListType[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
+  const { tasks, loading, error, addTask, updateTask, deleteTask } = useTaskContext()
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [filter, setFilter] = useState<"all" | "completed" | "pending">("all")
   const [selectedTask, setSelectedTask] = useState<ListType | null>(null)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [isAdding, setIsAdding] = useState<boolean>(false)
-
-  const fetchTasks = async () => {
-    try {
-      const response = await fetch("https://jsonplaceholder.typicode.com/todos")
-      if (!response.ok) throw new Error("Deu erro ao buscar")
-      const data: ListType[] = await response.json()
-      setTasks(data)
-      setLoading(false)
-    } catch (error) {
-      setError("Deu erro ao carregar")
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchTasks()
-  }, [])
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState<boolean>(false)
+  const [taskToDelete, setTaskToDelete] = useState<ListType | null>(null)
+  const [isConfirmingToggle, setIsConfirmingToggle] = useState<boolean>(false)
+  const [taskToToggle, setTaskToToggle] = useState<ListType | null>(null)
 
   const filteredTasks = useMemo(() => {
     switch (filter) {
       case "completed":
-        return tasks.filter((task) => task.completed)
+        return tasks.filter(task => task.completed)
       case "pending":
-        return tasks.filter((task) => !task.completed)
+        return tasks.filter(task => !task.completed)
       default:
         return tasks
     }
@@ -59,13 +45,9 @@ const List = () => {
   if (loading) return <p className="text-center">Carregando...</p>
   if (error) return <p className="text-center text-red-500">{error}</p>
 
-  const handleAddTask = async (task: { userId: number, title: string, body: string }) => {
-    try {
-      const newTask = await addTask(task)
-      setTasks((prevTasks) => [newTask, ...prevTasks])
-    } catch (error) {
-      console.error(error)
-    }
+  const handleAddTask = async (task: ListType) => {
+    await addTask(task)
+    setIsModalOpen(false)
   }
 
   const handleEditTask = (task: ListType) => {
@@ -74,36 +56,28 @@ const List = () => {
     setIsModalOpen(true)
   }
 
-  const handleUpdateTask = async (updatedTask: { title: string, body: string, userId: number }) => {
-    if (selectedTask) {
-      try {
-        const updated = await updateTask(selectedTask.id, { ...updatedTask, userId: selectedTask.userId })
-        setTasks((prevTasks) =>
-          prevTasks.map(task => task.id === updated.id ? updated : task)
-        )
-        setIsModalOpen(false)
-        setSelectedTask(null)
-      } catch (error) {
-        console.error(error)
-      }
+  const handleConfirmDelete = async () => {
+    if (taskToDelete) {
+      await deleteTask(taskToDelete.id)
+      setIsConfirmingDelete(false)
+      setTaskToDelete(null)
     }
   }
 
-  const handleDeleteTask = async (id: number) => {
-    try {
-      await deleteTask(id)
-      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id)) 
-    } catch (error) {
-      console.error("Erro ao excluir tarefa:", error)
+  const handleConfirmToggle = async () => {
+    if (taskToToggle) {
+      await updateTask({ ...taskToToggle, completed: !taskToToggle.completed })
+      setIsConfirmingToggle(false)
+      setTaskToToggle(null)
     }
   }
 
   return (
     <div className="mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-[#000]">Lista de Tarefas</h1>
+        <h1 className="text-[#44464a]">Tarefas</h1>
         <button
-          className="flex items-center px-4 py-2 bg-green-500 text-white rounded-md hover:bg-blue-600"
+          className="flex items-center px-4 py-2 bg-[#675a99] text-white rounded-md"
           onClick={() => {
             setSelectedTask({ title: "", body: "", userId: 1, id: 0, completed: false })
             setIsAdding(true)
@@ -114,9 +88,9 @@ const List = () => {
           Adicionar
         </button>
       </div>
-      
-      <div className="flex justify-center space-x-4 mb-4">
-        <button className={`px-4 py-2 rounded-md ${filter === "all" ? "bg-[#8474a1] text-white" : "bg-gray-200"}`} onClick={() => setFilter("all")}>
+
+      <div className="flex justify-center space-x-4 mb-4 border border-gray-300 rounded-[10px] p-4">
+        <button className={`px-4 py-2 rounded-md ${filter === "all" ? "bg-[#a49393] text-white" : "bg-gray-200"}`} onClick={() => setFilter("all")}>
           Todas
         </button>
         <button className={`px-4 py-2 rounded-md ${filter === "pending" ? "bg-yellow-500 text-white" : "bg-gray-200"}`} onClick={() => setFilter("pending")}>
@@ -127,72 +101,97 @@ const List = () => {
         </button>
       </div>
 
-      <div className="flex justify-between items-center p-4 bg-gray-100 font-bold">
-          <div className="flex-1 text-[#000]">Título / Descrição</div>
-          <div className="w-32 text-center text-[#000]">Status</div>
-          <div className="w-32 text-center text-[#000]">Ações</div>
+      <div className="block justify-between items-center p-4 font-bold border border-gray-300 rounded-[10px]">
+        <div className="overflow-y-auto h-[300px]">
+          <table className="w-full">
+            <thead className="border-b border-gray-300">
+              <tr>
+                <th className="text-left w-82 text-[#44464a]">Título / Descrição</th>
+                <th className="text-left w-32 text-[#44464a]">Status</th>
+                <th className="text-left w-41 text-[#44464a]">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedTasks.map((task) => (
+                <tr key={task.id} className="border-b border-gray-300 hover:bg-gray-100">
+                  <td className="pt-4 pb-4 pr-4 pl-0 text-left">
+                    <h2 className="text-lg font-semibold text-[#44464a] max-w-[400px] truncate">{task.title}</h2>
+                    <h4 className="font-light text-[#44464a]">{task.body}</h4>
+                  </td>
+                  <td className="pt-4 pb-4 pr-4 pl-0 text-left">
+                    <p className="text-sm text-[#44464a]">
+                      <span className={task.completed ? "text-[#116530] font-bold" : "text-yellow-600 font-bold"}>
+                        {task.completed ? "Concluída" : "Pendente"}
+                      </span>
+                    </p>
+                  </td>
+                  <td className="p-4 pl-0 flex justify-around">
+                    <button
+                      className={`px-2 py-1 ${task.completed ? "bg-gray-400" : "bg-[#116530]"} text-white rounded-md hover:bg-green-600 mr-2`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsConfirmingToggle(true)
+                        setTaskToToggle(task)
+                      }}
+                    >
+                      {task.completed ? "Pendente" : "Concluir"}
+                    </button>
+                    <button
+                      className="px-2 py-1 bg-transparent text-[#675a99] mr-2 flex items-center hover:border-[#675a99]"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleEditTask(task)
+                      }}
+                      title="Editar tarefa"
+                    >
+                      <Edit className="mr-1" size={16} /> 
+                    </button>
+                    <button
+                      className="px-2 py-1 bg-transparent text-[#675a99] flex items-center hover:border-[#675a99]"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setTaskToDelete(task)
+                        setIsConfirmingDelete(true) 
+                      }}
+                      title="Excluir tarefa"
+                    >
+                      <Trash2 className="mr-1" size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      <div className="h-72 overflow-y-auto border rounded-md shadow-sm p-2 bg-white scroll-smooth">
-        <ul className="space-y-4">
-          {paginatedTasks.map((task, index) => (
-            <li
-              key={task.id}
-              className={`flex justify-between items-center p-4 rounded-md transition-opacity duration-300 shadow-sm ${
-                task.completed ? "bg-white" : "bg-white"
-              } ${index === paginatedTasks.length - 1 ? "opacity-50" : "opacity-100"}`}
-            >
-              {/* Título e Descrição */}
-              <div className="flex-1">
-                <h2 className="text-lg font-semibold text-[#000]">{task.title}</h2>
-                <h4 className="text-md text-[#000]">{task.body}</h4>
-              </div>
-
-              {/* Status */}
-              <div className="w-32 text-center">
-                <p className="text-sm text-[#000]">
-                  <span
-                    className={task.completed ? "text-green-600 font-bold" : "text-yellow-600 font-bold"}
-                  >
-                    {task.completed ? "Concluída" : "Pendente"}
-                  </span>
-                </p>
-              </div>
-
-              {/* Ações */}
-              <div className="w-32 flex justify-around">
-                <button
-                  className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleEditTask(task)
-                  }}
-                >
-                  Editar
-                </button>
-                <button
-                  className="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDeleteTask(task.id)
-                  }}
-                >
-                  Excluir
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
       </div>
 
+      {isConfirmingDelete && (
+        <ConfirmationModal
+          title="Confirmação"
+          message="Tem certeza que deseja excluir esta tarefa?"
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setIsConfirmingDelete(false)}
+        />
+      )}
+
+      {isConfirmingToggle && (
+        <ConfirmationModal
+          title="Confirmação"
+          message={`Tem certeza que deseja ${taskToToggle?.completed ? "marcar como pendente" : "concluir"} esta tarefa?`}
+          onConfirm={handleConfirmToggle}
+          onCancel={() => setIsConfirmingToggle(false)}
+        />
+      )}
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
+
       {isModalOpen && (
         <Modal
           task={selectedTask || { title: "", body: "", userId: 1, id: 0, completed: false }}
-          onUpdateTask={handleUpdateTask}
+          onUpdateTask={updateTask}
           onAddTask={handleAddTask}
           onClose={() => setIsModalOpen(false)}
           isAdding={isAdding}
@@ -201,5 +200,6 @@ const List = () => {
     </div>
   )
 }
+
 
 export default List

@@ -4,6 +4,7 @@ type Task = {
   userId?: number
   title: string
   body: string
+  completed?: boolean 
 }
 
 export const addTask = async (task: Task) => {
@@ -25,7 +26,7 @@ export const updateTask = async (id: number, updatedTask: Task) => {
   const response = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`, {
     method: 'PUT',
     headers,
-    body: JSON.stringify({ ...updatedTask, id }),
+    body: JSON.stringify(updatedTask),
   })
 
   if (!response.ok) {
