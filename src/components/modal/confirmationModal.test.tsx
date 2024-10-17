@@ -1,10 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import ConfirmationModal from './confirmation-modal'
-import * as matchers from '@testing-library/jest-dom/matchers';
-
-
-expect.extend(matchers);
-
 
 describe('ConfirmationModal', () => {
   const title = 'Confirmação'

@@ -65,9 +65,6 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  console.log("Atualizando tarefa:", updateTask)
-
-
   return (
     <TaskContext.Provider value={{ tasks, loading, error, addTask: handleAddTask, updateTask: handleUpdateTask, deleteTask: handleDeleteTask }}>
       {children}

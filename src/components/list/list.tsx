@@ -46,9 +46,9 @@ const List = () => {
   if (error) return <p className="text-center text-red-500">{error}</p>
 
   const handleAddTask = async (task: Omit<ListType, "id" | "completed">) => {
-    await addTask({ ...task, id: 0, completed: false }); // Adicionando valores padrão
-    setIsModalOpen(false);
-  };
+    await addTask({ ...task, id: 0, completed: false })
+    setIsModalOpen(false)
+  }
 
   const handleEditTask = (task: ListType) => {
     setSelectedTask(task)
@@ -73,11 +73,11 @@ const List = () => {
   }
 
   return (
-    <div className="mx-auto p-4">
+    <div className="mx-auto p-4 flex flex-col">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-[#44464a]">Tarefas</h1>
+        <h1 className="text-xl md:text-2xl text-[#44464a]">Tarefas</h1>
         <button
-          className="flex items-center px-4 py-2 bg-[#675a99] text-white rounded-md"
+          className="flex items-center px-4 py-3 bg-[#675a99] text-white rounded-md text-base md:text-lg"
           onClick={() => {
             setSelectedTask({ title: "", body: "", userId: 1, id: 0, completed: false })
             setIsAdding(true)
@@ -102,8 +102,8 @@ const List = () => {
       </div>
 
       <div className="block justify-between items-center p-4 font-bold border border-gray-300 rounded-[10px]">
-        <div className="overflow-y-auto h-[300px]">
-          <table className="w-full">
+        <div className="overflow-y-auto h-screen md:h-[300px]">
+         <table className="w-full">
             <thead className="border-b border-gray-300">
               <tr>
                 <th className="text-left w-82 text-[#44464a]">Título / Descrição</th>
