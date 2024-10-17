@@ -4,8 +4,8 @@ import ConfirmationModal from './confirmation-modal'
 describe('ConfirmationModal', () => {
   const title = 'Confirmação'
   const message = 'Tem certeza que deseja continuar?'
-  const onConfirm = jest.fn()
-  const onCancel = jest.fn()
+  const onConfirm = vi.fn()
+  const onCancel = vi.fn()
 
   beforeEach(() => {
     render(

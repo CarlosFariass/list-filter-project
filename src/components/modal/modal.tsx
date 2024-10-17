@@ -52,8 +52,9 @@ const Modal: React.FC<ModalProps> = ({ task, onUpdateTask, onAddTask, onClose, i
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block mb-2 text-[#44464a] text-left">* Título:</label>
+            <label htmlFor="title" className="block mb-2 text-[#44464a] text-left">* Título:</label>
             <input
+              id="title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -62,8 +63,9 @@ const Modal: React.FC<ModalProps> = ({ task, onUpdateTask, onAddTask, onClose, i
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-2 text-[#44464a] text-left">* Descrição:</label>
+            <label htmlFor="description" className="block mb-2 text-[#44464a] text-left">* Descrição:</label>
             <textarea
+              id="description"
               value={body}
               onChange={(e) => setBody(e.target.value)}
               required
@@ -73,8 +75,9 @@ const Modal: React.FC<ModalProps> = ({ task, onUpdateTask, onAddTask, onClose, i
 
           {!isAdding && (
             <div className="mb-4">
-              <label className="block mb-2 text-[#44464a] text-left">* Status:</label>
+              <label htmlFor="status" className="block mb-2 text-[#44464a] text-left">* Status:</label>
               <select
+                id="status"
                 value={status ? "completed" : "pending"}
                 onChange={(e) => setStatus(e.target.value === "completed")}
                 className="border rounded-md p-2 w-full bg-[#fff] text-[#44464a]"
