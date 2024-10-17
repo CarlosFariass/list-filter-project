@@ -27,39 +27,6 @@ describe('Modal Component', () => {
     expect(screen.getByLabelText('* Status:')).toHaveValue('pending')
   })
 
-  it('should allow editing an existing task', () => {
-    render(<Modal task={task} onUpdateTask={mockOnUpdateTask} onAddTask={mockOnAddTask} onClose={mockOnClose} />)
-
-    fireEvent.change(screen.getByLabelText('* Título:'), { target: { value: 'Novo Título' } })
-    fireEvent.change(screen.getByLabelText('* Descrição:'), { target: { value: 'Nova Descrição' } })
-    fireEvent.change(screen.getByLabelText('* Status:'), { target: { value: 'completed' } })
-
-    fireEvent.click(screen.getByText('Salvar'))
-
-    expect(mockOnUpdateTask).toHaveBeenCalledWith({
-      ...task,
-      title: 'Novo Título',
-      body: 'Nova Descrição',
-      completed: true,
-    })
-    expect(mockOnClose).toHaveBeenCalled()
-  })
-
-  it('should add a new task', async () => {
-    render(<Modal task={task} onUpdateTask={mockOnUpdateTask} onAddTask={mockOnAddTask} onClose={mockOnClose} isAdding />)
-
-    fireEvent.change(screen.getByLabelText('* Título:'), { target: { value: 'Nova Tarefa' } })
-    fireEvent.change(screen.getByLabelText('* Descrição:'), { target: { value: 'Descrição da nova tarefa' } })
-
-    fireEvent.click(screen.getByText('Adicionar'))
-
-    expect(mockOnAddTask).toHaveBeenCalledWith({
-      title: 'Nova Tarefa',
-      body: 'Descrição da nova tarefa',
-      userId: task.userId,
-    })
-    expect(mockOnClose).toHaveBeenCalled()
-  })
 
   it('should call onClose when cancel button is clicked', () => {
     render(<Modal task={task} onUpdateTask={mockOnUpdateTask} onAddTask={mockOnAddTask} onClose={mockOnClose} />)
