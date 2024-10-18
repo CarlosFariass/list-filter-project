@@ -47,6 +47,7 @@ const List = () => {
 
   const handleAddTask = async (task: Omit<ListType, "id" | "completed">) => {
     await addTask({ ...task, id: 0, completed: false })
+    console.log("Tarefa adicionada:", task)
     setIsModalOpen(false)
   }
 
